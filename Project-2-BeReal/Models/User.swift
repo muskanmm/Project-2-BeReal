@@ -24,6 +24,6 @@ struct User: ParseUser {
     var password: String?
     var authData: [String: [String: String]?]?
 
-    // Your custom properties.
-    // var customKey: String?
+    var lastPostedDate: Date?
+
 }

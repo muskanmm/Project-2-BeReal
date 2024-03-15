@@ -17,15 +17,16 @@ class PostViewController: UIViewController {
     @IBOutlet weak var previewImageView: UIImageView!
     
     private var pickedImage: UIImage?
+    private var location: CLLocationCoordinate2D?
 
     
     override func viewDidLoad() {
         super.viewDidLoad()
     }
     
+ 
     @IBAction func onPickedImageTapped(_ sender: Any) {
         var config = PHPickerConfiguration()
-
         // Set the filter to only show images as options (i.e. no videos, etc.).
         config.filter = .images
 
@@ -57,6 +58,7 @@ class PostViewController: UIViewController {
             return
         }
 
+        print(imageData)
         // Create a Parse File by providing a name and passing in the image data
         let imageFile = ParseFile(name: "image.jpg", data: imageData)
 
@@ -80,7 +82,24 @@ class PostViewController: UIViewController {
                     print("✅ Post Saved! \(post)")
 
                     // Return to previous view controller
-                    self?.navigationController?.popViewController(animated: true)
+                    if var currentUser = User.current {
+
+                        currentUser.lastPostedDate = Date()
+
+                        currentUser.save { [weak self] result in
+                            switch result {
+                            case .success(let user):
+                                print("✅ User Saved! \(user)")
+
+                                DispatchQueue.main.async {
+                                    self?.navigationController?.popViewController(animated: true)
+                                }
+
+                            case .failure(let error):
+                                self?.showAlert(description: error.localizedDescription)
+                            }
+                        }
+                    }
 
                 case .failure(let error):
                     self?.showAlert(description: error.localizedDescription)
@@ -88,6 +107,19 @@ class PostViewController: UIViewController {
             }
         }
     }
+    
+    @IBAction func onTakePhotoTapped(_ sender: UIButton) {
+        guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
+            print("❌📷 Camera not available")
+            return
+        }
+        let imagePicker = UIImagePickerController()
+        imagePicker.sourceType = .camera
+        imagePicker.allowsEditing = true
+        imagePicker.delegate = self
+        present(imagePicker, animated: true)
+    }
+    
     
     private func showAlert(description: String? = nil) {
         let alertController = UIAlertController(title: "Oops...", message: "\(description ?? "Please try again...")", preferredStyle: .alert)
@@ -102,9 +134,23 @@ extension PostViewController: PHPickerViewControllerDelegate {
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
         // Dismiss the picker
         picker.dismiss(animated: true)
+        
+        let result = results.first
+//        print(result?.assetIdentifier)
+        if let assetId = result?.assetIdentifier {
+            let assetResults = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil)
+            print("here2")
+            DispatchQueue.main.async {
+                self.location = assetResults.firstObject?.location?.coordinate
+                print("📍 Image location coordinate: \(String(describing: self.location))")
+            }
+        }
+        
+        print("📍 Image location coordinate: \(String(describing: location))")
+//        print(result?.itemProvider)
 
         // Make sure we have a non-nil item provider
-        guard let provider = results.first?.itemProvider,
+        guard let provider = result?.itemProvider,
            // Make sure the provider can load a UIImage
            provider.canLoadObject(ofClass: UIImage.self) else { return }
 
@@ -136,8 +182,32 @@ extension PostViewController: PHPickerViewControllerDelegate {
               }
            }
         }
+        
     }
     
 
 }
 
+extension PostViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+       
+        picker.dismiss(animated: true)
+
+        
+        guard let image = info[.editedImage] as? UIImage else {
+            print("❌📷 Unable to get image")
+            return
+        }
+
+        previewImageView.image = image
+
+        pickedImage = image
+       
+//        print("HEREEEEE")
+//        if let asset = info[UIImagePickerController.InfoKey.phAsset] as? PHAsset {
+//                print("============> \(asset.location?.coordinate.longitude ?? 0) \(asset.location?.coordinate.latitude ?? 0)")
+//            }
+    }
+
+}

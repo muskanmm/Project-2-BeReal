@@ -9,6 +9,8 @@ import Foundation
 import ParseSwift
 
 struct Post: ParseObject {
+    
+    
     // These are required by ParseObject
         var objectId: String?
         var createdAt: Date?
@@ -20,4 +22,5 @@ struct Post: ParseObject {
         var caption: String?
         var user: User?
         var imageFile: ParseFile?
+        var location: ParseGeoPoint?
 }
