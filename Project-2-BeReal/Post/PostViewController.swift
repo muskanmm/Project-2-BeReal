@@ -26,7 +26,8 @@ class PostViewController: UIViewController {
     
  
     @IBAction func onPickedImageTapped(_ sender: Any) {
-        var config = PHPickerConfiguration()
+        let photoLibrary = PHPhotoLibrary.shared()
+        var config = PHPickerConfiguration(photoLibrary: photoLibrary)
         // Set the filter to only show images as options (i.e. no videos, etc.).
         config.filter = .images
 
@@ -61,6 +62,20 @@ class PostViewController: UIViewController {
         print(imageData)
         // Create a Parse File by providing a name and passing in the image data
         let imageFile = ParseFile(name: "image.jpg", data: imageData)
+        
+        // unwrap location
+//        guard let loc = location,
+//              let lat = loc.latitude,
+//              let lon = loc.longitude else {
+//            return
+//        }
+        guard let lat = location?.latitude else { return }
+        guard let lon = location?.longitude else { return }
+       
+           
+            
+        // create GeoPoint
+//        var geoLocation = ParseGeoPoint(latitude: lat, longitude: lon)
 
         // Create Post object
         var post = Post()
@@ -71,6 +86,15 @@ class PostViewController: UIViewController {
 
         // Set the user as the current user
         post.user = User.current
+        
+        // set geoPoint
+        do {
+            var geoLocation = try ParseGeoPoint(latitude: lat, longitude: lon)
+            post.location = geoLocation
+        } catch {
+            print("error")
+        }
+        
 
         // Save object in background (async)
         post.save { [weak self] result in
@@ -146,7 +170,7 @@ extension PostViewController: PHPickerViewControllerDelegate {
             }
         }
         
-        print("📍 Image location coordinate: \(String(describing: location))")
+        print("📍 Image location coordinate2: \(String(describing: location))")
 //        print(result?.itemProvider)
 
         // Make sure we have a non-nil item provider

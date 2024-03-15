@@ -8,6 +8,7 @@
 import UIKit
 import Alamofire
 import AlamofireImage
+import CoreLocation
 
 class PostCell: UITableViewCell {
 
@@ -51,6 +52,27 @@ class PostCell: UITableViewCell {
         captionLabel.text = post.caption
 
         // Location
+        let location = CLLocation(latitude: post.location?.latitude ?? 40.4432, longitude: post.location?.longitude ?? -79.9428)
+        let geocoder = CLGeocoder()
+        geocoder.reverseGeocodeLocation(location) { (placemarks, error) in
+            if let error = error {
+                print("Reverse geocoding failed with error: \(error.localizedDescription)")
+                return
+            }
+            
+            if let placemark = placemarks?.first {
+                // Access the city and country information from the placemark
+                if let city = placemark.locality, let country = placemark.country {
+                    print("City: \(city), Country: \(country)")
+                    self.locationLabel.text = "\(city), \(country)"
+                } else {
+                    print("Location information not found.")
+                }
+            } else {
+                print("No placemarks found.")
+            }
+        }
+        
         
         // Date
         if let date = post.createdAt {
