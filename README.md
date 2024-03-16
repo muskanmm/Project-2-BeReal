@@ -26,8 +26,6 @@ The following **additional** features are implemented:
 
 ## Video Walkthrough
 
-![](https://imgur.com/a7hhKn7.gif)
-![](https://imgur.com/a/NQqVCww.gif)
 ![Project3](https://github.com/muskanmm/Project-2-BeReal/assets/103543593/d32788fa-6a45-4280-be3a-75a9cb601cd5)
 
 
