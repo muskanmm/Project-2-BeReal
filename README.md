@@ -26,7 +26,9 @@ The following **additional** features are implemented:
 
 ## Video Walkthrough
 
-![](https://imgur.com/utxzZ20)
+![](https://imgur.com/utxzZ20.gif)
+![](https://i.imgur.com/oYUspvu.gif)
+https://imgur.com/utxzZ20
 
 
 ## Notes
